@@ -199,3 +199,28 @@ mahalanobisdist <- function(matrix) {
 
 m <- mahalanobisdist(usair)
 nrow(m)
+
+
+# Mahalanobis Distance
+
+covmatrix <- cov(usair)
+invcov <- solve(covmatrix)
+usairMahalanobis <- usair
+
+
+## Xi-mu
+for (i in 1:ncol(usairMahalanobis)){
+  usairMahalanobis[,i] <- usairMahalanobis[,i]-mean(usairMahalanobis[,i])
+}
+
+usairMahalanobismatrix<- data.matrix(usairMahalanobis)
+
+## di^2 = x'S^-1x   , x = xi-mu
+mahalanobisA <- vector()
+for (i in 1:nrow(usairMahalanobismatrix)){
+  x <- t(usairMahalanobismatrix[i,]) %*% invcov %*% usairMahalanobismatrix[i,]
+  mahalanobisA <- append(mahalanobisA,x)
+}
+
+names(mahalanobisA) <- rownames(usair2)
+mahalanobisA
