@@ -178,49 +178,57 @@ round(dis.matrix, digits = 2)
 
 # Mahalanobis Distance
 
-mahalanobisdist <- function(matrix) {
-  matrix <- data.matrix(usair)
-  covarmatrix <- var(matrix)
-  inversematrix <- solve(covarmatrix)
-  col <- ncol(matrix)
-  row <- nrow(matrix)
-  means <- array()
-  for (i in 1:col) {
-    means[i] <- mean(matrix[, i])
+mahalanobisdist <- function(data) {
+  covmatrix <- cov(data)
+  invcov <- solve(covmatrix)
+  dataMahalanobis <- data
+
+  ## Xi-mu
+  for (i in 1:ncol(dataMahalanobis)) {
+    dataMahalanobis[,i] <- dataMahalanobis[,i] - mean(dataMahalanobis[,i])
   }
-  substractedmatrix <- data.matrix(matrix)
-  for (i in 1:col) {
-    for (j in 1:row) {
-      substractedmatrix[j, i] <- matrix[j, i] - means[i]
-    }
+
+  dataMahalanobismatrix <- data.matrix(dataMahalanobis)
+
+  ## di^2 = x'S^-1x   , x = xi-mu
+  mahalanobisA <- vector()
+  for (i in 1:nrow(dataMahalanobismatrix)) {
+    x <- t(dataMahalanobismatrix[i,]) %*% invcov %*% dataMahalanobismatrix[i,]
+    mahalanobisA <- append(mahalanobisA, x)
   }
-  sqrt(t(substractedmatrix) %*% inversematrix %*% substractedmatrix)
+
+  names(mahalanobisA) <- rownames(data)
+  mahalanobisA
 }
 
-m <- mahalanobisdist(usair)
-nrow(m)
+usair.mahalanobis <- mahalanobisdist(usair)
+usair.mahalanobis
 
+# QQ Plot
 
-# Mahalanobis Distance
+par(mfrow = c(3, 3))
+qqnorm(usair[,1], xlab = 'SO2', ylab = 'Ordered observations')
+qqline(usair[,1])
+qqnorm(usair[,2], xlab = 'Neg.Temp', ylab = 'Ordered observations')
+qqline(usair[,2])
+qqnorm(usair[,3], xlab = 'Manuf', ylab = 'Ordered observations')
+qqline(usair[,3])
+qqnorm(usair[,4], xlab = 'Pop', ylab = 'Ordered observations')
+qqline(usair[,4])
+qqnorm(usair[,5], xlab = 'Wind', ylab = 'Ordered observations')
+qqline(usair[,5])
+qqnorm(usair[,6], xlab = 'Precip', ylab = 'Ordered observations')
+qqline(usair[,6])
+plot(x = vector())
+qqnorm(usair[,7], xlab = 'Days', ylab = 'Ordered observations')
+qqline(usair[,7])
 
-covmatrix <- cov(usair)
-invcov <- solve(covmatrix)
-usairMahalanobis <- usair
+dev.off()
 
+# Chiplot
 
-## Xi-mu
-for (i in 1:ncol(usairMahalanobis)){
-  usairMahalanobis[,i] <- usairMahalanobis[,i]-mean(usairMahalanobis[,i])
-}
+chiplot(Precip, Neg.Temp, vlabs = c('Precip', 'Neg.Temp'))
+chiplot(Precip, Wind, vlabs = c('Precip', 'Wind'))
+chiplot(Manuf, Pop, vlabs = c('Manuf', 'Pop'))
 
-usairMahalanobismatrix<- data.matrix(usairMahalanobis)
-
-## di^2 = x'S^-1x   , x = xi-mu
-mahalanobisA <- vector()
-for (i in 1:nrow(usairMahalanobismatrix)){
-  x <- t(usairMahalanobismatrix[i,]) %*% invcov %*% usairMahalanobismatrix[i,]
-  mahalanobisA <- append(mahalanobisA,x)
-}
-
-names(mahalanobisA) <- rownames(usair2)
-mahalanobisA
+dev.off()
